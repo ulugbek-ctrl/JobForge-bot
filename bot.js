@@ -2,20 +2,39 @@ const { Telegraf, Markup } = require('telegraf');
 const http = require('http');
 
 const token = process.env.BOT_TOKEN;
-const ADMIN_ID = 8241575055; // Сенинг ID рақаминг
-const ADMIN_USERNAME = 'Karimov_ppp'; // Сенинг юзернейминг
+const ADMIN_ID = 8241575055; //
+const ADMIN_USERNAME = 'Karimov_ppp'; //
+const CHANNEL_LINK = 'https://t.me/your_channel_link'; // Бу ерга канал ҳаволасини қўй
 
 const bot = new Telegraf(token);
 
+// Асосий меню (Пастки тугмалар)
 bot.start((ctx) => {
   return ctx.reply(`Assalomu Aleykum Job_Forge-ga xush kelibsiz!`, 
     Markup.keyboard([
-      ['🔍 Ish qidirish', '📢 E’lon berish'],
+      ['🔍 Ish qidirish', '👥 Ishchi kerak'],
+      ['📢 E’lon berish', 'ℹ️ Biz haqimizda'],
       ['👨‍💻 Admin', '📢 Telegram Kanal']
     ]).resize()
   );
 });
 
+// 1. Иш қидириш
+bot.hears('🔍 Ish qidirish', (ctx) => {
+  return ctx.reply(`Agarda siz o'zingizga mos ishlarni qidirayotgan bo'lsangiz, bizni kanalimizga qo'shiling:\n\n${CHANNEL_LINK}`);
+});
+
+// 2. Ишчи керак
+bot.hears('👥 Ishchi kerak', (ctx) => {
+  return ctx.reply(`Agarda siz ishchi qidirmoqchi bo'lsangiz, biz sizni kanalimizga taklif qilamiz:\n\n${CHANNEL_LINK}`);
+});
+
+// 3. Биз ҳақимизда
+bot.hears('ℹ️ Biz haqimizda', (ctx) => {
+  return ctx.reply(`Job-Forge sizga ko'p sohalarda yordam bera oladi. Misol uchun, siz ish qidirmoqchi bo'lsangiz, o'zingizni ma'lumotlaringizni yozishingiz kerak. Biz bilan esa faqat turar joyingiz yoki kerakli maosh va smenalarga mos tanlab olishingiz mumkin.`);
+});
+
+// 4. Эълон бериш (Тарифлар)
 bot.hears('📢 E’lon berish', (ctx) => {
   return ctx.reply('Vakansiya joylashtirish uchun tarifni tanlang:', 
     Markup.inlineKeyboard([
@@ -26,6 +45,7 @@ bot.hears('📢 E’lon berish', (ctx) => {
     ]));
 });
 
+// Тариф танланганда админга хабар бериш
 bot.on('callback_query', async (ctx) => {
   const data = ctx.callbackQuery.data;
   let tariffName = '';
@@ -37,25 +57,29 @@ bot.on('callback_query', async (ctx) => {
 
   await ctx.answerCbQuery();
 
-  // 1. МИЖОЗГА ЖАВОБ: У фақат шуни кўради
-  await ctx.reply(`Rahmat! Siz "${tariffName}" tarifini tanladingiz.\n\nTez orada admin siz bilan bog'lanadi ёки ўзингиз ёзишингиз мумкин:`,
+  await ctx.reply(`Rahmat! Siz "${tariffName}" tarifini tanladingiz.\n\nTez orada admin siz bilan bog'lanadi yoki o'zingiz yozishingiz mumkin:`,
     Markup.inlineKeyboard([
       [Markup.button.url('Adminga yozish ✍️', `https://t.me/${ADMIN_USERNAME}`)]
     ])
   );
 
-  // 2. АДМИНГА (СЕНГА) ХАБАР: Бу фақат сенинг личкангга боради
+  // Фақат сенга (админга) хабар боради
   return ctx.telegram.sendMessage(ADMIN_ID, 
-    `🚀 **Yangi mijoz keldi!**\n\n👤 **Kim:** @${ctx.from.username || 'Юзернейм йўқ'}\n📦 **Tarif:** ${tariffName}\n🆔 **ID:** ${ctx.from.id}`
+    `🚀 **Yangi mijoz keldi!**\n\n👤 **Kim:** @${ctx.from.username || 'Username yo\'q'}\n📦 **Tarif:** ${tariffName}\n🆔 **ID:** ${ctx.from.id}`
   );
 });
 
+// 5. Админ ва Канал тугмалари
 bot.hears('👨‍💻 Admin', (ctx) => {
   return ctx.reply(`Savollar bo'lsa adminga murojaat qiling: @${ADMIN_USERNAME}`);
 });
 
+bot.hears('📢 Telegram Kanal', (ctx) => {
+  return ctx.reply(`Bizning rasmiy kanalimiz: ${CHANNEL_LINK}`);
+});
+
 bot.telegram.deleteWebhook().then(() => {
-    bot.launch().then(() => console.log('🚀 Бот янгиланган тизимда ишга тушди!'));
+    bot.launch().then(() => console.log('🚀 Бот тўлиқ меню билан ишга тушди!'));
 });
 
 http.createServer((req, res) => { res.write('OK'); res.end(); }).listen(process.env.PORT || 10000);
