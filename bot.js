@@ -1,35 +1,36 @@
 const { Telegraf, Markup } = require('telegraf');
 const http = require('http');
 
+// Токенни Render-даги Environment бўлимидан олади
+const token = process.env.BOT_TOKEN;
 const ADMIN_ID = 8241575055;
-// Энг охирги олинган токен (image_edb89b.png дан)
-const bot = new Telegraf('8731348653:AAEprXOmBlRhuLOplH8vZfBqa3KZH5OD4bk');
+
+if (!token) {
+  console.error("ХАТО: BOT_TOKEN топилмади! Render-даги Environment бўлимини текширинг.");
+  process.exit(1);
+}
+
+const bot = new Telegraf(token);
 
 bot.start((ctx) => {
   return ctx.reply(`Assalomu Aleykum Job_Forge-ga xush kelibsiz!`, 
-    Markup.keyboard([
-      ['🔍 Ish qidirish', '📢 E’lon berish'],
-      ['👨‍💻 Admin', '📢 Telegram Kanal']
-    ]).resize()
+    Markup.keyboard([['🔍 Ish qidirish', '📢 E’lon berish']]).resize()
   );
 });
 
 bot.hears('📢 E’lon berish', (ctx) => {
-  return ctx.reply('Vakansiya joylashtirish uchun tarifni tanlang:', 
-    Markup.inlineKeyboard([
-      [Markup.button.callback('Oddiy (2 hafta) - Bepul', 'tariff_oddiy')],
-      [Markup.button.callback('Pro (1 hafta TOP) - 150k', 'tariff_pro')]
-    ]));
+  return ctx.reply('Тарифни танланг:', 
+    Markup.inlineKeyboard([[Markup.button.callback('Oddiy - Bepul', 'tariff_oddiy')]]));
 });
 
 bot.on('callback_query', async (ctx) => {
   await ctx.answerCbQuery();
-  await ctx.reply('Rahmat! Admin tez orada bog‘lanadi.');
-  return ctx.telegram.sendMessage(ADMIN_ID, `🚀 Yangi mijoz: @${ctx.from.username || 'user'}`);
+  await ctx.reply('Раҳмат! Админ сиз билан боғланади.');
+  return ctx.telegram.sendMessage(ADMIN_ID, `🚀 Янги мижоз: @${ctx.from.username || 'user'}`);
 });
 
 bot.telegram.deleteWebhook().then(() => {
-    bot.launch().then(() => console.log('🚀 Bot muvaffaqiyatli ulandi!'));
+    bot.launch().then(() => console.log('🚀 Бот муваффақиятли уланди!'));
 });
 
-http.createServer((req, res) => { res.write('Bot is running'); res.end(); }).listen(process.env.PORT || 10000);
+http.createServer((req, res) => { res.write('OK'); res.end(); }).listen(process.env.PORT || 10000);
