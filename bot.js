@@ -1,12 +1,14 @@
 const { Telegraf, Markup } = require('telegraf');
 const http = require('http');
 
-const bot = new Telegraf('8731348653:AAGLP2LoZfp-mpdI_W9fqScSggRFmgcXHFY');
-const ADMIN_ID = "415145209";
+// 1. Созламалар
+const ADMIN_ID = 8241575055;
+// Охирги янги токенни қўйдик
+const bot = new Telegraf('8731348653:AAEprXOmBlRhuLOplH8vZfBqa3KZH5OD4bk');
 
-// Асосий меню
+// 2. Бот буйруқлари
 bot.start((ctx) => {
-  ctx.reply(`Assalomu Aleykum Job_Forge-га хуш келибсиз! \n\nАгарда сиз иш қидирмоқчи бўлсангиз ёки ишчи қидираётган бўлсангиз биз билан бемалол боғланинг.`, 
+  return ctx.reply(`Assalomu Aleykum Job_Forge-ga xush kelibsiz! \n\nAgar siz ish qidirmoqchi bo'lsangiz yoki ishchi qidirayotgan bo'lsangiz, biz bilan bog'laning.`, 
     Markup.keyboard([
       ['🔍 Ish qidirish', '📢 E’lon berish'],
       ['👨‍💻 Admin', '📢 Telegram Kanal']
@@ -14,42 +16,46 @@ bot.start((ctx) => {
   );
 });
 
-bot.hears('🔍 Ish qidirish', (ctx) => {
-    ctx.reply('Ҳурматли фойдаланувчи! Иш қидириш бўлими ҳозирда янгиланмоқда. Илтимос, админ билан боғланинг ёки телеграм каналимизга қўшилинг:', 
-    Markup.inlineKeyboard([
-        [Markup.button.url('👨‍💻 Админ', 'https://t.me/Karimov_ppp')],
-        [Markup.button.url('📢 Телеграм канал', 'https://t.me/Job_Forge')]
-    ])
-    );
-});
-
 bot.hears('📢 E’lon berish', (ctx) => {
-  ctx.reply('Вакансия жойлаштириш учун тарифни танланг:', 
+  return ctx.reply('Vakansiya joylashtirish uchun tarifni tanlang:', 
     Markup.inlineKeyboard([
       [Markup.button.callback('Oddiy (2 hafta) - Bepul', 'tariff_oddiy')],
       [Markup.button.callback('Pro (1 hafta TOP) - 150k', 'tariff_pro')],
       [Markup.button.callback('Extra (1 oy) - 349k', 'tariff_extra')],
       [Markup.button.callback('24 soat REK - 50k', 'tariff_rek')]
-    ])
-  );
+    ]));
 });
 
-bot.hears('👨‍💻 Admin', (ctx) => ctx.reply('Админ билан боғланиш: @Karimov_ppp'));
-bot.hears('📢 Telegram Kanal', (ctx) => ctx.reply('Бизнинг канал: https://t.me/Job_Forge'));
-
-bot.action(/tariff_/, (ctx) => {
-  ctx.answerCbQuery();
-  ctx.reply('Раҳмат! Тез орада админ сиз билан боғланиб, эълонингизни жойлайди.');
-  bot.telegram.sendMessage(ADMIN_ID, `Янги мижоз! \nUsername: @${ctx.from.username} \nТанлаган тарифи: ${ctx.match.input}`);
+// Тугмалар босилганда ишлайдиган қисм
+bot.on('callback_query', async (ctx) => {
+  const actionData = ctx.callbackQuery.data;
+  
+  if (actionData.startsWith('tariff_')) {
+    await ctx.answerCbQuery();
+    await ctx.reply('Rahmat! Tez orada admin siz bilan bog‘lanib, e’loningizni joylaydi.');
+    
+    // Админга хабар юбориш
+    const user = ctx.from;
+    const adminMsg = `🚀 Янги мижоз!\n👤 Исм: ${user.first_name}\n🔗 Юзер: @${user.username || 'йўқ'}\n🆔 ID: ${user.id}\n💳 Тариф: ${actionData}`;
+    
+    return ctx.telegram.sendMessage(ADMIN_ID, adminMsg).catch(e => console.log("Admin xabar hatosi:", e));
+  }
 });
 
-// Ботни ёқиш
-bot.launch().then(() => {
-    console.log('Бот Telegram-га уланди!');
+bot.hears('👨+💻 Admin', (ctx) => ctx.reply('Admin bilan bog‘lanish: @Karimov_ppp'));
+bot.hears('📢 Telegram Kanal', (ctx) => ctx.reply('Bizning kanal: https://t.me/Job_Forge'));
+
+// 3. Ботни ишга тушириш (Webhook тозалаш билан)
+bot.telegram.deleteWebhook().then(() => {
+    bot.launch().then(() => console.log('🚀 Бот муваффақиятли уланди!'));
 });
 
-// Render "Timed Out" бермаслиги учун сервер
+// 4. Render учун сервер
 http.createServer((req, res) => {
-  res.write('Бот ишлаяпти!');
+  res.write('Bot is running...');
   res.end();
 }).listen(process.env.PORT || 10000);
+
+// Хатларни ушлаш
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
