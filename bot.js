@@ -2,8 +2,8 @@ const { Telegraf, Markup } = require('telegraf');
 const http = require('http');
 
 const token = process.env.BOT_TOKEN;
-const ADMIN_ID = 8241575055; 
-const ADMIN_USERNAME = 'Karimov_ppp'; // Сенинг аккаунтинг
+const ADMIN_ID = 8241575055; // Сенинг ID рақаминг
+const ADMIN_USERNAME = 'Karimov_ppp'; // Сенинг юзернейминг
 
 const bot = new Telegraf(token);
 
@@ -37,16 +37,16 @@ bot.on('callback_query', async (ctx) => {
 
   await ctx.answerCbQuery();
 
-  // 1. Клиентга жавоб бериш ва сенинг аккаунтингни кўрсатиш
-  await ctx.reply(`Rahmat! Siz "${tariffName}" tarifini tanladingiz.\n\nTezroq bog'lanish uchun adminga yozishingiz mumkin: @${ADMIN_USERNAME}`,
+  // 1. МИЖОЗГА ЖАВОБ: У фақат шуни кўради
+  await ctx.reply(`Rahmat! Siz "${tariffName}" tarifini tanladingiz.\n\nTez orada admin siz bilan bog'lanadi ёки ўзингиз ёзишингиз мумкин:`,
     Markup.inlineKeyboard([
       [Markup.button.url('Adminga yozish ✍️', `https://t.me/${ADMIN_USERNAME}`)]
     ])
   );
 
-  // 2. Сенга (Админга) хабар юбориш
+  // 2. АДМИНГА (СЕНГА) ХАБАР: Бу фақат сенинг личкангга боради
   return ctx.telegram.sendMessage(ADMIN_ID, 
-    `🚀 **Yangi mijoz!**\n\n👤 Kim: @${ctx.from.username || 'user'}\n📦 Tarif: ${tariffName}\n🆔 ID: ${ctx.from.id}`
+    `🚀 **Yangi mijoz keldi!**\n\n👤 **Kim:** @${ctx.from.username || 'Юзернейм йўқ'}\n📦 **Tarif:** ${tariffName}\n🆔 **ID:** ${ctx.from.id}`
   );
 });
 
@@ -55,7 +55,7 @@ bot.hears('👨‍💻 Admin', (ctx) => {
 });
 
 bot.telegram.deleteWebhook().then(() => {
-    bot.launch().then(() => console.log('🚀 Bot yangi tariflar bilan ishga tushdi!'));
+    bot.launch().then(() => console.log('🚀 Бот янгиланган тизимда ишга тушди!'));
 });
 
 http.createServer((req, res) => { res.write('OK'); res.end(); }).listen(process.env.PORT || 10000);
