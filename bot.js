@@ -2,14 +2,14 @@ const { Telegraf, Markup } = require('telegraf');
 const http = require('http');
 
 const token = process.env.BOT_TOKEN;
-const ADMIN_ID = 8241575055; //
-const ADMIN_USERNAME = 'Karimov_ppp'; //
-const CHANNEL_LINK = 't.me/Job_Forge'; //
-const WEBSITE_URL = 'https://jobforge-uz.vercel.app/'; // Сенинг React сайтинг
+const ADMIN_ID = 8241575055; 
+const ADMIN_USERNAME = 'Karimov_ppp'; 
+const CHANNEL_LINK = 't.me/Job_Forge'; 
+const WEBSITE_URL = 'https://jobforge-uz.vercel.app/'; 
 
 const bot = new Telegraf(token);
 
-// Асосий меню
+// 1. Асосий меню
 bot.start((ctx) => {
   return ctx.reply(`🚀 JobForge-UZ Professional platformasiga xush kelibsiz!\n\nBiz bilan ish topish va ishchi olish endi ancha oson va zamonaviy.`, 
     Markup.keyboard([
@@ -21,7 +21,12 @@ bot.start((ctx) => {
   );
 });
 
-// Сайт ва WebApp тугмаси
+// 2. ЯНГИ: Help буйруғи (Сен сўраган жойи)
+bot.help((ctx) => {
+  return ctx.reply(`❓ Ботдан қандай foydalanish mumkin?\n\n1️⃣ **Ish qidirish** — bo'sh ish o'rinlarini ko'rish.\n2️⃣ **Ishchi kerak** — xodim izlash haqida e'lon berish.\n3️⃣ **Saytni ochish** — to'liq veb-versiyaga o'tish.\n\nAgar muammo yuzaga kelsa, /start ni bosing yoki adminga yozing.`);
+});
+
+// 3. Сайт ва WebApp тугмаси
 bot.hears('🌐 Saytni ochish (Full Version)', (ctx) => {
   return ctx.reply(`Professional saytimiz orqali barcha vakansiyalarni filtrlash va AI rezyume yaratish imkoniyatiga egasiz:`, 
     Markup.inlineKeyboard([
@@ -31,7 +36,7 @@ bot.hears('🌐 Saytni ochish (Full Version)', (ctx) => {
   );
 });
 
-// Иш қидириш ва Канал
+// 4. Иш қидириш ва Канал
 bot.hears('🔍 Ish qidirish', (ctx) => {
   return ctx.reply(`O'zingizga mos ishlarni qidirayotgan bo'lsangiz, bizning kanalga qo'shiling yoki saytdan foydalaning:\n\nKanal: ${CHANNEL_LINK}\nSayt: ${WEBSITE_URL}`);
 });
@@ -44,7 +49,7 @@ bot.hears('ℹ️ Biz haqimizda', (ctx) => {
   return ctx.reply(`JobForge-UZ — bu zamonaviy ish qidirish ekotizimi. Biz sizga turar joy, maosh va smenalarga mos ish topishda yordam beramiz.`);
 });
 
-// Эълон бериш ва Тарифлар
+// 5. Эълон бериш ва Тарифлар
 bot.hears('📢 E’lon berish', (ctx) => {
   return ctx.reply('Vakansiya joylashtirish uchun tarifni tanlang:', 
     Markup.inlineKeyboard([
@@ -55,9 +60,11 @@ bot.hears('📢 E’lon berish', (ctx) => {
     ]));
 });
 
-// Callback ва Админга хабар
+// 6. Callback ва Админга хабар
 bot.on('callback_query', async (ctx) => {
   const data = ctx.callbackQuery.data;
+  if (!data.startsWith('t_')) return; // Фақат тарифлар учун
+
   let tariffName = data.replace('t_', '').toUpperCase();
 
   await ctx.answerCbQuery();
@@ -73,11 +80,20 @@ bot.on('callback_query', async (ctx) => {
 bot.hears('👨‍💻 Admin', (ctx) => ctx.reply(`Savollar bo'lsa: @${ADMIN_USERNAME}`));
 bot.hears('📢 Telegram Kanal', (ctx) => ctx.reply(`Kanalimiz: ${CHANNEL_LINK}`));
 
-bot.launch().then(() => console.log('🚀 Бот ва Сайт муваффақиятли уланди!'));
+// 7. Хатоликларни ушлаш (Бот ўчиб қолмаслиги учун)
+bot.catch((err, ctx) => {
+  console.log(`Ooops, error for ${ctx.updateType}`, err);
+});
 
-// Render учун сервер
+bot.launch().then(() => console.log('🚀 Бот муваффақиятли ишга тушди!'));
+
+// 8. Render учун сервер (Порт 10000)
 http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.write('<h1>JobForge-UZ Bot Server is Running!</h1>');
     res.end();
 }).listen(process.env.PORT || 10000);
+
+// Жараённи тўғри тўхтатиш
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
